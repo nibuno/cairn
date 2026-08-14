@@ -47,6 +47,7 @@ export class CairnWebStack extends cdk.Stack {
 
     const userPool = new cognito.UserPool(this, 'UserPool', {
       userPoolName: 'cairn',
+      featurePlan: cognito.FeaturePlan.LITE,
       selfSignUpEnabled: false,
       signInAliases: { email: true },
       signInCaseSensitive: false,
@@ -92,15 +93,8 @@ export class CairnWebStack extends cdk.Stack {
       cognitoDomain: {
         domainPrefix: `cairn-nibuno-${cdk.Aws.ACCOUNT_ID}`,
       },
-      managedLoginVersion: cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN,
+      managedLoginVersion: cognito.ManagedLoginVersion.CLASSIC_HOSTED_UI,
     });
-
-    const managedLoginBranding = new cognito.CfnManagedLoginBranding(this, 'ManagedLoginBranding', {
-      userPoolId: userPool.userPoolId,
-      clientId: userPoolClient.userPoolClientId,
-      useCognitoProvidedValues: true,
-    });
-    managedLoginBranding.node.addDependency(userPoolDomain);
 
     const albSecurityGroup = new ec2.SecurityGroup(this, 'AlbSecurityGroup', {
       vpc,

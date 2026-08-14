@@ -37,6 +37,7 @@ test('web stack protects every application request with Cognito', () => {
     AdminCreateUserConfig: {
       AllowAdminCreateUserOnly: true,
     },
+    UserPoolTier: 'LITE',
     UsernameAttributes: ['email'],
   });
   web.hasResourceProperties('AWS::Cognito::UserPoolClient', {
@@ -52,6 +53,7 @@ test('web stack protects every application request with Cognito', () => {
       Match.objectLike({ Type: 'forward' }),
     ]),
   });
+  web.resourceCountIs('AWS::Cognito::ManagedLoginBranding', 0);
 });
 
 test('web stack runs one private ARM64 task and contains no database', () => {
