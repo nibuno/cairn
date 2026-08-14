@@ -502,7 +502,7 @@
       </p>
       <div class="current-state">
         <strong>いまの状態</strong>
-        <span><code>nibuno.dev</code> は取得済みです。CairnのDNSとAWSリソースは、これから作成します。</span>
+        <span>アプリとCDKはローカルで検証済みです。AWSリソースはまだ作成していません。</span>
       </div>
     </header>
 
@@ -564,14 +564,14 @@
           <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
           <div class="flow__step" role="listitem">
             <span class="flow__number">03</span>
-            <span class="flow__name">ECS</span>
-            <span class="flow__detail">Cairnを実行して画面を返す</span>
+            <span class="flow__name">Cognito</span>
+            <span class="flow__detail">未ログインなら認証し、ALBへ戻す</span>
           </div>
           <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
           <div class="flow__step" role="listitem">
             <span class="flow__number">04</span>
-            <span class="flow__name">RDS</span>
-            <span class="flow__detail">記録を保存・取得する</span>
+            <span class="flow__name">ECS</span>
+            <span class="flow__detail">ログイン後にCairnの画面を返す</span>
           </div>
         </div>
       </article>
@@ -617,17 +617,17 @@
           <tr>
             <th scope="row">ALB</th>
             <td>公開入口</td>
-            <td>HTTPS受付、HTTPからHTTPSへの転送、ヘルスチェック</td>
+            <td>HTTPS受付、Cognito認証、ECSへの振り分け</td>
+          </tr>
+          <tr>
+            <th scope="row">Cognito</th>
+            <td>利用者のログイン</td>
+            <td>メールアドレス、パスワード、Hosted UI</td>
           </tr>
           <tr>
             <th scope="row">ECS Fargate</th>
             <td>Cairn本体の実行</td>
             <td>コンテナ、CPU、メモリ、稼働数</td>
-          </tr>
-          <tr>
-            <th scope="row">RDS PostgreSQL</th>
-            <td>記録データの保存</td>
-            <td>データベース、バックアップ、復元</td>
           </tr>
         </tbody>
       </table>
@@ -655,26 +655,18 @@
         <li>
           <span class="timeline__number">3</span>
           <div>
-            <h3>証明書、ALB、ECS、RDSを作る</h3>
-            <p>証明書とALBは東京リージョンに置き、ALBの443番ポートでHTTPSを受けます。</p>
+            <h3>証明書、Cognito、ALB、ECSを作る</h3>
+            <p>ALBがHTTPSを受け、未ログインならCognitoへ移動させます。</p>
           </div>
           <span class="timeline__owner">CDKで管理</span>
         </li>
         <li>
           <span class="timeline__number">4</span>
           <div>
-            <h3>Route 53からALBへ向ける</h3>
-            <p>Aliasレコードを追加すると、<code>cairn.nibuno.dev</code> でアクセスできるようになります。</p>
+            <h3>Route 53からALBへ向け、最初の利用者を作る</h3>
+            <p><code>cairn.nibuno.dev</code> でログインし、準備中画面を確認します。</p>
           </div>
           <span class="timeline__owner">CDKで管理</span>
-        </li>
-        <li>
-          <span class="timeline__number">5</span>
-          <div>
-            <h3>GitHub Actionsから更新する</h3>
-            <p>mainへの反映をきっかけに、新しいコンテナをECRへ送り、ECSを更新します。</p>
-          </div>
-          <span class="timeline__owner">OIDCでAWSへ接続</span>
         </li>
       </ol>
     </section>
@@ -686,13 +678,13 @@
           <h3>一度だけ手作業</h3>
           <ul>
             <li>CloudflareへのNSレコード登録</li>
-            <li>GitHubとAWSの最初の接続確認</li>
+            <li>最初のCognito利用者の作成とログイン</li>
           </ul>
         </article>
         <article>
           <h3>リポジトリで管理</h3>
           <ul>
-            <li>Route 53、ACM、ALB、ECS、RDS</li>
+            <li>Route 53、ACM、Cognito、ALB、ECS</li>
             <li>権限、ログ、アラーム</li>
             <li>ビルドとデプロイ手順</li>
           </ul>

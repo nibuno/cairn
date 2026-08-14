@@ -1,8 +1,16 @@
 flowchart TB
-    user[利用者] -->|HTTPS 443| dns[Route 53]
-    dns --> waf[AWS WAF]
-    waf --> alb[ALB<br/>public subnet × 2 AZ]
+    user[利用者]
+    cloudflare[Cloudflare DNS<br/>nibuno.dev]
+    dns[Route 53<br/>cairn.nibuno.dev]
+    user -. DNS問い合わせ .-> cloudflare
+    cloudflare -. NS委譲 .-> dns
+    dns -. Alias .-> alb
+
+    user -->|HTTPS 443| alb[ALB<br/>public subnet × 2 AZ]
+    waf[AWS WAF] -. 保護 .-> alb
     acm[ACM 証明書] -.-> alb
+    alb -->|未ログイン時redirect| cognito[Cognito User Pool Lite<br/>Hosted UI]
+    cognito -->|認証後callback| alb
 
     alb -->|:3000 / SG 参照| ecs[ECS Fargate<br/>private-app subnet × 2 AZ<br/>2 tasks 以上]
     ecs -->|TLS :5432 / SG 参照| rds[(RDS PostgreSQL Multi-AZ<br/>isolated-data subnet)]
