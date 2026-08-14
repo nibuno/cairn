@@ -1,0 +1,8 @@
+flowchart LR
+    browser[ブラウザ] -->|HTTPS| alb[Application Load Balancer]
+    alb -->|未認証ならリダイレクト| cognito[Cognito User Pool Lite<br/>Classic Hosted UI]
+    cognito -->|認証後のcallback| alb
+    alb -->|認証済みrequest| ecs[ECS Fargate<br/>準備中画面]
+    acm[ACM証明書] -.-> alb
+    cloudflare[Cloudflare<br/>nibuno.dev] -. NS委譲・未実施 .-> route53[Route 53<br/>cairn.nibuno.dev]
+    route53 -. Alias .-> alb
