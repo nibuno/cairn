@@ -1,0 +1,24 @@
+flowchart TB
+    user[利用者] -->|HTTPS 443| dns[Route 53]
+    dns --> waf[AWS WAF]
+    waf --> alb[ALB<br/>public subnet × 2 AZ]
+    acm[ACM 証明書] -.-> alb
+
+    alb -->|:3000 / SG 参照| ecs[ECS Fargate<br/>private-app subnet × 2 AZ<br/>2 tasks 以上]
+    ecs -->|TLS :5432 / SG 参照| rds[(RDS PostgreSQL Multi-AZ<br/>isolated-data subnet)]
+
+    ecs --> ecr[ECR]
+    ecs --> secrets[Secrets Manager]
+    rds -. master credential 管理 .-> secrets
+
+    ecs --> otel[OpenTelemetry]
+    otel --> cw[CloudWatch<br/>Logs / Metrics / Traces / SLO]
+    otel -. optional .-> datadog[Datadog]
+    ecs -. exception / release .-> sentry[Sentry]
+    cw -. optional data source .-> grafana[Amazon Managed Grafana]
+
+    ecs --> egress[NAT Gateway / VPC Endpoint<br/>本番は AZ 単位で設計]
+
+    gha[GitHub Actions] -->|OIDC| deploy[IAM deploy role]
+    deploy --> ecr
+    deploy --> ecs

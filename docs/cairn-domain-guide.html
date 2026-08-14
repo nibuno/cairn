@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>cairn.nibuno.dev を公開する仕組み</title>
+  <style>
+    :root {
+      --page: #fafaf9;
+      --surface: #ffffff;
+      --text: #292524;
+      --heading: #1c1917;
+      --muted: #78716c;
+      --line: #d6d3d1;
+      --line-soft: #e7e5e4;
+      --action: #fcd34d;
+      --action-strong: #f59e0b;
+      --code: #44403c;
+      --radius: 8px;
+      --content: 1040px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-underline-offset: 3px;
+    }
+
+    a:focus-visible {
+      outline: 3px solid var(--action-strong);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      padding: 8px 12px;
+      background: var(--heading);
+      color: white;
+      transform: translateY(-160%);
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .site-header {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .site-header__inner,
+    main,
+    footer {
+      width: min(calc(100% - 32px), var(--content));
+      margin-inline: auto;
+    }
+
+    .site-header__inner {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+      padding-block: 18px;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .document-label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      padding-block: 56px 88px;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin-bottom: 64px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--heading);
+      line-height: 1.35;
+      letter-spacing: -0.025em;
+    }
+
+    h1 {
+      max-width: 720px;
+      margin: 0;
+      font-size: clamp(32px, 6vw, 52px);
+      font-weight: 700;
+    }
+
+    h2 {
+      margin: 0 0 24px;
+      font-size: clamp(24px, 4vw, 32px);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .lead {
+      max-width: 680px;
+      margin: 24px 0 0;
+      color: var(--code);
+      font-size: 18px;
+    }
+
+    .current-state {
+      margin-top: 28px;
+      padding: 16px 18px;
+      border-left: 4px solid var(--action-strong);
+      background: var(--surface);
+    }
+
+    .current-state strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--heading);
+    }
+
+    section + section {
+      margin-top: 80px;
+    }
+
+    .section-intro {
+      max-width: 720px;
+      margin: -12px 0 28px;
+      color: var(--muted);
+    }
+
+    .flow {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .flow + .flow {
+      margin-top: 20px;
+    }
+
+    .flow__header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .flow__kind {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .flow__steps {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .flow__step,
+    .flow__arrow {
+      min-width: 0;
+      padding: 24px 14px;
+    }
+
+    .flow__step {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 1px solid var(--line-soft);
+    }
+
+    .flow__step:first-child {
+      border-left: 0;
+    }
+
+    .flow__arrow {
+      align-self: center;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .flow__number {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .flow__name {
+      display: block;
+      color: var(--heading);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .flow__detail {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .flow__step--answer {
+      background: #fffbeb;
+    }
+
+    .explanation {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      margin-top: 20px;
+      border: 1px solid var(--line);
+      background: var(--line);
+    }
+
+    .explanation > div {
+      padding: 20px;
+      background: var(--page);
+    }
+
+    .explanation p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .service-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 1px solid var(--line);
+    }
+
+    .service-table th,
+    .service-table td {
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .service-table th {
+      width: 23%;
+      color: var(--heading);
+      font-size: 15px;
+    }
+
+    .service-table td:nth-child(2) {
+      width: 34%;
+    }
+
+    .service-table td:last-child {
+      color: var(--muted);
+    }
+
+    code {
+      padding: 2px 5px;
+      border: 1px solid var(--line-soft);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em;
+      overflow-wrap: anywhere;
+    }
+
+    .timeline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid var(--line);
+    }
+
+    .timeline li {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) minmax(180px, 0.55fr);
+      gap: 18px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .timeline__number {
+      color: var(--heading);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .timeline h3 {
+      margin-bottom: 5px;
+    }
+
+    .timeline p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .timeline__owner {
+      align-self: start;
+      padding-left: 14px;
+      border-left: 3px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .timeline__owner--manual {
+      border-left-color: var(--action-strong);
+      color: var(--heading);
+    }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .decision article {
+      padding-top: 18px;
+      border-top: 4px solid var(--line);
+    }
+
+    .decision article:first-child {
+      border-top-color: var(--action-strong);
+    }
+
+    .decision ul {
+      margin: 14px 0 0;
+      padding-left: 20px;
+    }
+
+    .note {
+      margin-top: 28px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    footer {
+      padding-block: 28px 48px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        padding-block: 40px 64px;
+      }
+
+      .intro {
+        margin-bottom: 48px;
+      }
+
+      section + section {
+        margin-top: 64px;
+      }
+
+      .flow__header {
+        display: block;
+      }
+
+      .flow__kind {
+        display: block;
+        margin-top: 3px;
+      }
+
+      .flow__steps {
+        display: block;
+      }
+
+      .flow__step {
+        padding: 18px 20px;
+        border-top: 1px solid var(--line-soft);
+        border-left: 0;
+      }
+
+      .flow__step:first-child {
+        border-top: 0;
+      }
+
+      .flow__arrow {
+        padding: 5px 20px;
+        text-align: left;
+      }
+
+      .flow__arrow::before {
+        content: "↓ ";
+      }
+
+      .flow__arrow span {
+        display: none;
+      }
+
+      .explanation,
+      .decision {
+        grid-template-columns: 1fr;
+      }
+
+      .service-table,
+      .service-table tbody,
+      .service-table tr,
+      .service-table th,
+      .service-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .service-table tr {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .service-table th,
+      .service-table td,
+      .service-table td:nth-child(2) {
+        width: 100%;
+        padding: 2px 0;
+        border: 0;
+      }
+
+      .timeline li {
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .timeline__owner {
+        grid-column: 2;
+        margin-top: 4px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <span class="brand">cairn</span>
+      <span class="document-label">公開方法の説明</span>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <header class="intro">
+      <p class="eyebrow">nibuno.dev / AWS</p>
+      <h1><code>cairn.nibuno.dev</code> を公開する仕組み</h1>
+      <p class="lead">
+        Cloudflareは親ドメインを管理し、Route 53はCairnの住所を答えます。実際の画面はAWS上のアプリケーションが返します。
+      </p>
+      <div class="current-state">
+        <strong>いまの状態</strong>
+        <span><code>nibuno.dev</code> は取得済みです。CairnのDNSとAWSリソースは、これから作成します。</span>
+      </div>
+    </header>
+
+    <section aria-labelledby="two-flows-title">
+      <h2 id="two-flows-title">「住所を調べる」と「画面を開く」は別の通信</h2>
+      <p class="section-intro">
+        CloudflareやRoute 53の中を、Web画面のデータが通過するわけではありません。最初に住所を問い合わせ、その回答を使ってブラウザがALBへ直接接続します。
+      </p>
+
+      <article class="flow" aria-labelledby="dns-flow-title">
+        <header class="flow__header">
+          <h3 id="dns-flow-title">1. 住所を調べる</h3>
+          <span class="flow__kind">DNS問い合わせ</span>
+        </header>
+        <div class="flow__steps" role="list">
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">01</span>
+            <span class="flow__name">ブラウザ</span>
+            <span class="flow__detail">cairn.nibuno.dev はどこ？</span>
+          </div>
+          <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">02</span>
+            <span class="flow__name">Cloudflare</span>
+            <span class="flow__detail">CairnはRoute 53に聞いてください</span>
+          </div>
+          <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">03</span>
+            <span class="flow__name">Route 53</span>
+            <span class="flow__detail">ALBの場所を回答</span>
+          </div>
+          <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
+          <div class="flow__step flow__step--answer" role="listitem">
+            <span class="flow__number">04</span>
+            <span class="flow__name">ALBの住所</span>
+            <span class="flow__detail">接続先が決まる</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="flow" aria-labelledby="https-flow-title">
+        <header class="flow__header">
+          <h3 id="https-flow-title">2. 画面を開く</h3>
+          <span class="flow__kind">HTTPS通信</span>
+        </header>
+        <div class="flow__steps" role="list">
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">01</span>
+            <span class="flow__name">ブラウザ</span>
+            <span class="flow__detail">HTTPSで接続</span>
+          </div>
+          <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">02</span>
+            <span class="flow__name">ALB</span>
+            <span class="flow__detail">証明書を確認し、処理を振り分ける</span>
+          </div>
+          <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">03</span>
+            <span class="flow__name">ECS</span>
+            <span class="flow__detail">Cairnを実行して画面を返す</span>
+          </div>
+          <div class="flow__arrow" aria-hidden="true"><span>→</span></div>
+          <div class="flow__step" role="listitem">
+            <span class="flow__number">04</span>
+            <span class="flow__name">RDS</span>
+            <span class="flow__detail">記録を保存・取得する</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="explanation">
+        <div>
+          <h3>DNSは案内係</h3>
+          <p>名前から接続先を調べます。アプリケーションの記録データは扱いません。</p>
+        </div>
+        <div>
+          <h3>ALBはアプリの入口</h3>
+          <p>HTTPSを受け、正常に動いているECSタスクへリクエストを渡します。</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="roles-title">
+      <h2 id="roles-title">各サービスの担当</h2>
+      <table class="service-table">
+        <thead>
+          <tr>
+            <th scope="col">サービス</th>
+            <th scope="col">Cairnでの担当</th>
+            <th scope="col">管理するもの</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Cloudflare</th>
+            <td><code>nibuno.dev</code> の親DNS</td>
+            <td><code>cairn</code> をRoute 53へ渡すNSレコード4件</td>
+          </tr>
+          <tr>
+            <th scope="row">Route 53</th>
+            <td><code>cairn.nibuno.dev</code> のDNS</td>
+            <td>ALBを指すAliasレコードと証明書検証レコード</td>
+          </tr>
+          <tr>
+            <th scope="row">ACM</th>
+            <td>HTTPS証明書</td>
+            <td><code>cairn.nibuno.dev</code> が本物であることの証明</td>
+          </tr>
+          <tr>
+            <th scope="row">ALB</th>
+            <td>公開入口</td>
+            <td>HTTPS受付、HTTPからHTTPSへの転送、ヘルスチェック</td>
+          </tr>
+          <tr>
+            <th scope="row">ECS Fargate</th>
+            <td>Cairn本体の実行</td>
+            <td>コンテナ、CPU、メモリ、稼働数</td>
+          </tr>
+          <tr>
+            <th scope="row">RDS PostgreSQL</th>
+            <td>記録データの保存</td>
+            <td>データベース、バックアップ、復元</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="order-title">
+      <h2 id="order-title">公開までの順番</h2>
+      <ol class="timeline">
+        <li>
+          <span class="timeline__number">1</span>
+          <div>
+            <h3>Route 53にCairn専用のHosted Zoneを作る</h3>
+            <p>AWSから4つのネームサーバーが発行されます。</p>
+          </div>
+          <span class="timeline__owner">IaCで作成し、削除されない基盤として保護</span>
+        </li>
+        <li>
+          <span class="timeline__number">2</span>
+          <div>
+            <h3>CloudflareにNSレコードを4件登録する</h3>
+            <p><code>cairn.nibuno.dev</code> の管理をRoute 53へ委譲します。</p>
+          </div>
+          <span class="timeline__owner timeline__owner--manual">人が一度だけ設定</span>
+        </li>
+        <li>
+          <span class="timeline__number">3</span>
+          <div>
+            <h3>証明書、ALB、ECS、RDSを作る</h3>
+            <p>証明書とALBは東京リージョンに置き、ALBの443番ポートでHTTPSを受けます。</p>
+          </div>
+          <span class="timeline__owner">CDKで管理</span>
+        </li>
+        <li>
+          <span class="timeline__number">4</span>
+          <div>
+            <h3>Route 53からALBへ向ける</h3>
+            <p>Aliasレコードを追加すると、<code>cairn.nibuno.dev</code> でアクセスできるようになります。</p>
+          </div>
+          <span class="timeline__owner">CDKで管理</span>
+        </li>
+        <li>
+          <span class="timeline__number">5</span>
+          <div>
+            <h3>GitHub Actionsから更新する</h3>
+            <p>mainへの反映をきっかけに、新しいコンテナをECRへ送り、ECSを更新します。</p>
+          </div>
+          <span class="timeline__owner">OIDCでAWSへ接続</span>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="boundary-title">
+      <h2 id="boundary-title">手作業とコードの境界</h2>
+      <div class="decision">
+        <article>
+          <h3>一度だけ手作業</h3>
+          <ul>
+            <li>CloudflareへのNSレコード登録</li>
+            <li>GitHubとAWSの最初の接続確認</li>
+          </ul>
+        </article>
+        <article>
+          <h3>リポジトリで管理</h3>
+          <ul>
+            <li>Route 53、ACM、ALB、ECS、RDS</li>
+            <li>権限、ログ、アラーム</li>
+            <li>ビルドとデプロイ手順</li>
+          </ul>
+        </article>
+      </div>
+      <div class="note">
+        <p><strong>.devではHTTPSが必須です。</strong> 証明書とALBを準備してから、最後に公開用のAliasレコードを追加します。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Cairn deployment guide — 2026年8月14日時点の計画
+  </footer>
+</body>
+</html>

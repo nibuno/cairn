@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cairn — 今日の記録</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-w-80 bg-stone-50 text-stone-800 antialiased">
+  <a
+    href="#main-content"
+    class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:bg-stone-800 focus:px-3 focus:py-2 focus:text-white"
+  >本文へ移動</a>
+
+  <header class="border-b border-stone-200 bg-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 px-4 sm:px-6">
+      <a href="#" class="py-4 text-lg font-semibold tracking-tight">cairn</a>
+
+      <nav class="order-3 flex w-full gap-6 overflow-x-auto text-sm sm:order-2 sm:w-auto" aria-label="メインナビゲーション">
+        <a href="#today" aria-current="page" class="border-b-2 border-amber-400 py-3 font-medium text-stone-900 sm:py-5">今日</a>
+        <a href="#history" class="border-b-2 border-transparent py-3 text-stone-500 hover:text-stone-900 sm:py-5">記録</a>
+        <a href="#week" class="border-b-2 border-transparent py-3 text-stone-500 hover:text-stone-900 sm:py-5">振り返り</a>
+        <a href="#settings" class="border-b-2 border-transparent py-3 text-stone-500 hover:text-stone-900 sm:py-5">設定</a>
+      </nav>
+
+      <button
+        type="button"
+        class="ml-auto min-h-11 rounded-md border border-stone-300 bg-white px-4 text-sm font-medium text-stone-700 hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 sm:order-3"
+      >項目を追加</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+    <header id="today" class="mb-7 flex flex-wrap items-end justify-between gap-5">
+      <div>
+        <p class="mb-1 text-sm text-stone-500">2026年8月14日（金）</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-stone-900">今日</h1>
+        <p class="mt-2 text-sm text-stone-500">
+          <span id="day-count">1 / 3件を記録</span>
+        </p>
+      </div>
+      <button type="button" class="min-h-11 text-sm text-stone-500 underline underline-offset-4 hover:text-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">今日は休む</button>
+    </header>
+
+    <section class="overflow-hidden rounded-lg border border-stone-200 bg-white" aria-labelledby="records-title">
+        <h2 id="records-title" class="sr-only">今日の記録</h2>
+
+        <ul class="divide-y divide-stone-100">
+          <li class="task-row flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:px-6" data-task="aws">
+            <div class="min-w-0 flex-1">
+              <p class="task-title font-medium text-stone-900">AWSを学ぶ</p>
+              <p class="mt-1 text-sm text-stone-500">目安 15分 ・ 12日継続</p>
+            </div>
+            <button
+              type="button"
+              aria-pressed="true"
+              class="record-button min-h-11 w-full rounded-md border border-stone-200 bg-stone-100 px-4 text-sm font-medium text-stone-700 hover:bg-stone-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 sm:w-28"
+            >✓ 記録済み</button>
+          </li>
+
+          <li class="task-row flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:px-6" data-task="book">
+            <div class="min-w-0 flex-1">
+              <p class="task-title font-medium text-stone-900">技術書を読む</p>
+              <p class="mt-1 text-sm text-stone-500">目安 10分 ・ 5日継続</p>
+            </div>
+            <button
+              type="button"
+              aria-pressed="false"
+              class="record-button min-h-11 w-full rounded-md border border-transparent bg-amber-300 px-4 text-sm font-semibold text-stone-900 hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 sm:w-28"
+            >記録する</button>
+          </li>
+
+          <li class="task-row flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:px-6" data-task="walk">
+            <div class="min-w-0 flex-1">
+              <p class="task-title font-medium text-stone-900">散歩する</p>
+              <p class="mt-1 text-sm text-stone-500">目安 20分 ・ 8日継続</p>
+            </div>
+            <button
+              type="button"
+              aria-pressed="false"
+              class="record-button min-h-11 w-full rounded-md border border-transparent bg-amber-300 px-4 text-sm font-semibold text-stone-900 hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 sm:w-28"
+            >記録する</button>
+          </li>
+        </ul>
+    </section>
+  </main>
+
+  <p id="status-announcer" role="status" aria-live="polite" class="sr-only"></p>
+
+  <script>
+    const recordedClasses = ['border-stone-200', 'bg-stone-100', 'text-stone-700', 'hover:bg-stone-200', 'font-medium'];
+    const unrecordedClasses = ['border-transparent', 'bg-amber-300', 'text-stone-900', 'hover:bg-amber-400', 'font-semibold'];
+    const taskRows = [...document.querySelectorAll('.task-row')];
+    const dayCount = document.querySelector('#day-count');
+    const announcer = document.querySelector('#status-announcer');
+
+    function updateCount() {
+      const recordedCount = taskRows.filter((row) => row.querySelector('.record-button').getAttribute('aria-pressed') === 'true').length;
+      dayCount.textContent = `${recordedCount} / ${taskRows.length}件を記録`;
+    }
+
+    taskRows.forEach((row) => {
+      const button = row.querySelector('.record-button');
+      const title = row.querySelector('.task-title').textContent;
+
+      button.addEventListener('click', () => {
+        const isRecorded = button.getAttribute('aria-pressed') === 'true';
+        button.setAttribute('aria-pressed', String(!isRecorded));
+        button.textContent = isRecorded ? '記録する' : '✓ 記録済み';
+
+        if (isRecorded) {
+          button.classList.remove(...recordedClasses);
+          button.classList.add(...unrecordedClasses);
+          announcer.textContent = `${title}の記録を取り消しました。`;
+        } else {
+          button.classList.remove(...unrecordedClasses);
+          button.classList.add(...recordedClasses);
+          announcer.textContent = `${title}を記録しました。`;
+        }
+
+        updateCount();
+      });
+    });
+  </script>
+</body>
+</html>
