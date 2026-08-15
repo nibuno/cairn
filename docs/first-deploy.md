@@ -97,14 +97,29 @@ aws cognito-idp admin-create-user \
 - ECS serviceはdesired 1、running 1、deployment completedになった
 - ALB target groupはhealthyになった
 - `https://cairn.nibuno.dev` は未認証requestをCognitoへHTTP 302でredirectした
+- Cognitoの初回利用者を作成し、Hosted UIから実際にログインできることを確認した
 
 `CairnWebStack` のデプロイは約5分41秒だった。実際の利用者によるログインと、ログイン後の準備中画面はまだ確認していない。
 
 CDK実行時のNode.jsは `/usr/local/bin/node` のv20.15.1で、2027年1月以降に公開されるAWS SDK v3にはNode.js 22以上が必要という警告が出た。ECSへデプロイしたcontainerは `node:22-alpine` を使っている。リポジトリにはローカルNodeのバージョン固定ファイルがまだないため、後続作業でNode.js 22へ揃える。
 
+## 2026-08-15の停止結果
+
+一時利用を終えたため、`CairnWebStack` を削除した。削除対象には次が含まれる。
+
+- ALB、ECS cluster/service/task definition
+- NAT Gateway、VPC、Security Group
+- Cognito User Pool、User Pool Client、Hosted UI domain
+- ACM certificate、CloudWatch Logs、ALBのRoute 53レコード
+
+`CairnDomainStack` は残しているため、`cairn.nibuno.dev` のRoute 53 Hosted ZoneとCloudflareからのNS委譲は維持している。Webスタック削除に伴い、Cognitoのユーザーとログイン情報も削除された。
+
+ECSのdesired countを0にする方法もあるが、ALBとNAT Gatewayの時間課金が残る。今回は固定費を止めるため、スタック削除を選択した。
+
 ## 補足
 
 - 今回は一時利用のため、Cognito User PoolとRoute 53 Hosted Zoneもスタック削除時に削除する。本番運用へ移る前に保持設定を再検討する
+- Cognitoユーザーを再デプロイ後も残す場合は、Cognitoを`CairnWebStack`から分離した`CairnAuthStack`として管理する。Webスタックを削除してもAuthスタックを残せるため、User Pool、Client、Hosted UI設定を維持できる。既存User Poolを同じ物理リソースとして再利用する設計を先に決め、`RemovalPolicy.RETAIN`だけで済ませない
 - ECSはprivate subnetに置き、3000番ポートはALBのSecurity Groupからだけ許可する
 - 初期構成はコスト優先でNAT Gatewayを1台にする
 - アプリは認証情報を認可判断にまだ使わない。利用者別データを追加するときにALB署名検証を実装する
