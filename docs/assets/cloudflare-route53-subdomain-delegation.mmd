@@ -1,0 +1,5 @@
+flowchart LR
+    browser[DNSを調べる利用者] --> cloudflare[Cloudflare<br/>nibuno.dev]
+    cloudflare -->|従来どおり管理| siblings[blog.nibuno.dev など]
+    cloudflare -->|cairn のNSを4件登録| route53[Route 53<br/>cairn.nibuno.dev]
+    route53 -. 後続StackでA Aliasを作成 .-> alb[AWS ALB]

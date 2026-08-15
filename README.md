@@ -7,6 +7,7 @@ Cairn は、学習や活動を小さな単位で記録し、後から振り返�
 ## 最初に見るもの
 
 - [cairn.nibuno.dev を公開する仕組み](./docs/cairn-domain-guide.html)
+- [CloudflareからRoute 53へサブドメインを委譲する手順](./docs/cloudflare-route53-subdomain-delegation.md)
 - [ここまでに行ったこと](./docs/cairn-first-deploy-implementation-record.md)
 - [最初のデプロイ手順](./docs/first-deploy.md)
 - [ALB + Cognito認証の設計判断](./docs/adr/0001-alb-cognito-authentication.md)
