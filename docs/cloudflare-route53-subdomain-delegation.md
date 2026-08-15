@@ -201,11 +201,12 @@ Hosted Zoneを作り直すと4つのネームサーバーも変わるため、�
 
 この文書の作成時点では、次はまだ観察していない。
 
-- `CairnWebStack`、証明書、Cognito、ALB、ECSの動作
+- Cognito利用者を作成した後の実ログイン
+- ログイン後にECSの準備中画面が表示されること
 
 ## 次の確認
 
-`CairnWebStack` の差分を確認し、ALB、NAT Gateway、Fargateなど継続料金が発生するリソースの内容に問題がないことを確認する。
+最初のCognito利用者を管理者として作成し、Hosted UIからログインした後にECSの準備中画面が表示されることを確認する。
 
 ## 参考資料
 

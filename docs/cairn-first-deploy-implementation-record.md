@@ -4,15 +4,21 @@
 - 対象: `cairn.nibuno.dev` の最初のAWS公開
 - 対象コミット: [`021ef71`](https://github.com/nibuno/cairn/commit/021ef714108b4aa850b20c4534fad0860798cdbc) から [`260e085`](https://github.com/nibuno/cairn/commit/260e0854a2a78905e2920e922a628290946d51d3) まで
 
-## 結論
+## 現在の状態
+
+2026-08-15にCloudflareからRoute 53へのNS委譲と、`CairnDomainStack`、`CairnWebStack` のデプロイを完了した。ACM証明書、Cognito Lite、ALB、ECS Fargateが作成され、ECS taskとALB target groupはhealthyである。未認証requestがCognitoへredirectされることも確認した。
+
+まだ行っていないのは、最初のCognito利用者作成と、ログイン後の準備中画面をブラウザで確認することである。
+
+## 実装時点の結論
 
 `cairn.nibuno.dev` を、Cognitoのメールアドレス＋パスワード認証を通した後にECS Fargateの準備中画面へ接続するコードまで実装した。ローカルテスト、Dockerイメージのビルド、CDKの型検査・テスト・CloudFormation生成は成功している。
 
-ただし、AWSへのデプロイとCloudflareのDNS変更はまだ行っていない。したがって、現時点で `https://cairn.nibuno.dev` が公開されたわけではなく、この作業によってAWSリソースや継続課金も作成されていない。
+この記録を作成した2026-08-14時点では、AWSへのデプロイとCloudflareのDNS変更はまだ行っておらず、AWSリソースや継続課金も作成されていなかった。
 
 ## 実装した構成
 
-次の図は、CDKがこれからAWS上へ作成する構成である。実在するリソースの現況図ではない。
+次の図は、CDKで実装し、2026-08-15にAWS上で稼働を確認した構成である。
 
 ```mermaid
 flowchart LR
@@ -21,7 +27,7 @@ flowchart LR
     cognito -->|認証後のcallback| alb
     alb -->|認証済みrequest| ecs[ECS Fargate<br/>準備中画面]
     acm[ACM証明書] -.-> alb
-    cloudflare[Cloudflare<br/>nibuno.dev] -. NS委譲・未実施 .-> route53[Route 53<br/>cairn.nibuno.dev]
+    cloudflare[Cloudflare<br/>nibuno.dev] -. NS委譲 .-> route53[Route 53<br/>cairn.nibuno.dev]
     route53 -. Alias .-> alb
 ```
 
@@ -109,7 +115,7 @@ CognitoのUser PoolにはLite、Essentials、Plusというfeature planがある�
 
 記録当初はRoute 53 Hosted ZoneとCognito User Poolを削除時も保持する設計だった。その後、一時デプロイ後にまとめて片付ける方針へ変更し、現在は両方ともStackと一緒に削除する。Cognito利用者も削除されるため、本番運用へ移る前に保持方針を再検討する。
 
-## まだ行っていないこと
+## 実装記録時点でまだ行っていなかったこと
 
 - `CairnDomainStack` と `CairnWebStack` のAWSへのデプロイ
 - CloudflareからRoute 53へのNS委譲
@@ -118,11 +124,11 @@ CognitoのUser PoolにはLite、Essentials、Plusというfeature planがある�
 - ALB、Cognito、ECSを通したブラウザでのend-to-end確認
 - 実測したAWS料金の確認
 
-最終的なCDK synthは成功したが、ローカルのNode.js 20に関する将来のサポート警告、cross-stack referenceの既定値、Security Groupの重複したegress指定に関する警告が出ている。また、別のsynthではCDK lookup roleを引き受けられず現在の認証情報で処理を継続した旨も表示された。実デプロイ前にAWS権限を確認し、Node.js 22への更新とCDK警告の整理は後続作業で行う。
+最終的なCDK synthは成功したが、ローカルのNode.js 20に関する将来のサポート警告、cross-stack referenceの既定値、Security Groupの重複したegress指定に関する警告が出ている。また、別のsynthではCDK lookup roleを引き受けられず現在の認証情報で処理を継続した旨も表示された。実デプロイは成功しており、Node.js 22への更新とCDK警告の整理は後続作業で行う。
 
 ## 次の一手
 
-次は、内容と発生しうる料金を確認したうえで `CairnDomainStack` だけをデプロイし、Cloudflareへ登録する4つのNSを取得する。これはAWS上の状態を変更するため、自動では実行していない。
+次は、最初のCognito利用者を管理者として作成し、Cognito Hosted UIからログインして準備中画面を確認する。
 
 ## 参考資料
 

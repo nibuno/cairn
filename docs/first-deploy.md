@@ -17,7 +17,7 @@ Route 53、証明書、Cognito、ALB、ECSはCDKが作成する。
 
 ## デプロイ前の確認
 
-AWSへはまだデプロイしていない。次のコマンドはローカル検証だけを行い、AWSリソースを作成しない。
+次のコマンドはローカル検証だけを行い、AWSリソースを作成しない。
 
 ```bash
 cd infra
@@ -87,6 +87,20 @@ aws cognito-idp admin-create-user \
 - ログイン後は「Cairnを準備しています」と表示される
 - `CairnWebStack` のECS serviceが1 taskを維持する
 - ALB target groupの `/health` がhealthyになる
+
+## 2026-08-15の実行結果
+
+- CloudflareからRoute 53へのNS委譲を確認した
+- `CairnDomainStack` と `CairnWebStack` が `CREATE_COMPLETE` になった
+- ACM証明書のDNS検証が完了した
+- Cognito User PoolがLiteで作成された
+- ECS serviceはdesired 1、running 1、deployment completedになった
+- ALB target groupはhealthyになった
+- `https://cairn.nibuno.dev` は未認証requestをCognitoへHTTP 302でredirectした
+
+`CairnWebStack` のデプロイは約5分41秒だった。実際の利用者によるログインと、ログイン後の準備中画面はまだ確認していない。
+
+CDK実行時のNode.jsは `/usr/local/bin/node` のv20.15.1で、2027年1月以降に公開されるAWS SDK v3にはNode.js 22以上が必要という警告が出た。ECSへデプロイしたcontainerは `node:22-alpine` を使っている。リポジトリにはローカルNodeのバージョン固定ファイルがまだないため、後続作業でNode.js 22へ揃える。
 
 ## 補足
 
