@@ -117,7 +117,20 @@ CairnDomainStack.HostedZoneId
 CairnDomainStack.NameServers
 ```
 
-`NameServers` はカンマ区切りの4件である。実際の値とCloudFormationの完了状態は、デプロイ完了後に確認する項目であり、この文書の作成時点では未確認である。
+`NameServers` はカンマ区切りの4件である。
+
+### 実行結果
+
+2026-08-15に実行し、Synthesis 12.62秒、Deployment 51.73秒、合計71.8秒で完了した。実行後にAWS CLIでもCloudFormation Stackが `CREATE_COMPLETE` であることと、Hosted Zone名・4つのネームサーバーが一致することを確認した。
+
+```text
+ns-384.awsdns-48.com
+ns-1479.awsdns-56.org
+ns-1020.awsdns-63.net
+ns-1822.awsdns-35.co.uk
+```
+
+この時点の公開DNSで `dig +short NS cairn.nibuno.dev` が空なのは正常である。Route 53側のHosted Zoneはできたが、Cloudflare側からの委譲がまだないためである。
 
 ## 手順4: CloudflareへNSレコードを4件登録する
 
@@ -125,10 +138,10 @@ Cloudflare Dashboardで `nibuno.dev` を開き、DNS Recordsへ進む。Route 53
 
 | Type | Name | Content |
 |---|---|---|
-| NS | `cairn` | Route 53の1件目のネームサーバー |
-| NS | `cairn` | Route 53の2件目のネームサーバー |
-| NS | `cairn` | Route 53の3件目のネームサーバー |
-| NS | `cairn` | Route 53の4件目のネームサーバー |
+| NS | `cairn` | `ns-384.awsdns-48.com` |
+| NS | `cairn` | `ns-1479.awsdns-56.org` |
+| NS | `cairn` | `ns-1020.awsdns-63.net` |
+| NS | `cairn` | `ns-1822.awsdns-35.co.uk` |
 
 ここで変更するのは `cairn` のNSだけである。次は変更しない。
 
@@ -175,14 +188,12 @@ Hosted Zoneを作り直すと4つのネームサーバーも変わるため、�
 
 この文書の作成時点では、次はまだ観察していない。
 
-- `CairnDomainStack` の実デプロイ完了
-- 実際に割り当てられた4つのネームサーバー
 - Cloudflare登録後の公開DNS委譲
 - `CairnWebStack`、証明書、Cognito、ALB、ECSの動作
 
 ## 次の確認
 
-`CairnDomainStack` のデプロイ結果にある4つのネームサーバーを保存し、Cloudflareへ登録する前に、Stackが `CREATE_COMPLETE` でHosted Zone以外を作っていないことを確認する。
+上記4つのNSレコードをCloudflareへ登録し、`dig +short NS cairn.nibuno.dev` の結果が4件と一致することを確認する。
 
 ## 参考資料
 
