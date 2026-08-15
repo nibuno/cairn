@@ -57,20 +57,23 @@ AWSとCloudflareも、子サブドメインと同名のHosted Zoneを作り、�
 
 ## 手順1: 正しいディレクトリへ移動する
 
-CDKコマンドは `cdk.json` がある `infra` ディレクトリで実行する。
+CDKコマンドは `cdk.json` がある `infra` ディレクトリで実行する。最初にremoteを確認し、同名の別リポジトリではないことを確かめる。
 
 ```bash
-cd /Users/tatsuya/tsumiage/cairn/infra
-pwd
+git remote get-url origin
+git rev-parse --show-toplevel
+cd "$(git rev-parse --show-toplevel)/infra"
 ls cdk.json package.json
 npm ci
 ```
 
-`pwd` の期待値は次である。
+remoteの期待値は次である。
 
 ```text
-/Users/tatsuya/tsumiage/cairn/infra
+git@github.com:nibuno/cairn.git
 ```
+
+remoteが異なる場合は、その場所でデプロイを続けない。リポジトリの保存場所を変えても、この確認方法なら個人の絶対パスに依存せず `infra` へ移動できる。
 
 別の `cairn` ディレクトリで `npx cdk deploy CairnDomainStack` を実行すると、ローカルのCDKと `cdk.json` が見つからず、CDKの追加インストール確認に続いて次のエラーになった。
 
@@ -159,7 +162,7 @@ Route 53 Public Hosted Zoneは、最初の25 Hosted Zoneまで1件あたり月�
 今回のCDKは一時利用向けに、Hosted ZoneもStackと一緒に削除する設定である。WebStackまで作った場合は、先にCloudflareのNSレコード4件を削除し、依存関係の逆順で削除する。
 
 ```bash
-cd /Users/tatsuya/tsumiage/cairn/infra
+cd "$(git rev-parse --show-toplevel)/infra"
 npx cdk destroy CairnWebStack
 npx cdk destroy CairnDomainStack
 ```
