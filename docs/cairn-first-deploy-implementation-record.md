@@ -107,6 +107,8 @@ CognitoのUser PoolにはLite、Essentials、Plusというfeature planがある�
 
 最後の照会結果から、少なくとも対象AWSアカウントにはCairnのCloudFormation stackがまだ存在しないことを確認した。
 
+記録当初はRoute 53 Hosted ZoneとCognito User Poolを削除時も保持する設計だった。その後、一時デプロイ後にまとめて片付ける方針へ変更し、現在は両方ともStackと一緒に削除する。Cognito利用者も削除されるため、本番運用へ移る前に保持方針を再検討する。
+
 ## まだ行っていないこと
 
 - `CairnDomainStack` と `CairnWebStack` のAWSへのデプロイ

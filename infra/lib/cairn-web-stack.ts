@@ -61,7 +61,7 @@ export class CairnWebStack extends cdk.Stack {
         requireUppercase: true,
         tempPasswordValidity: cdk.Duration.days(7),
       },
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     const userPoolClient = userPool.addClient('AlbClient', {

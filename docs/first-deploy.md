@@ -90,7 +90,19 @@ aws cognito-idp admin-create-user \
 
 ## 補足
 
-- Cognito User PoolとRoute 53 Hosted Zoneは誤削除を避けるため、スタック削除時も保持する
+- 今回は一時利用のため、Cognito User PoolとRoute 53 Hosted Zoneもスタック削除時に削除する。本番運用へ移る前に保持設定を再検討する
 - ECSはprivate subnetに置き、3000番ポートはALBのSecurity Groupからだけ許可する
 - 初期構成はコスト優先でNAT Gatewayを1台にする
 - アプリは認証情報を認可判断にまだ使わない。利用者別データを追加するときにALB署名検証を実装する
+
+## 一時利用後の削除
+
+先にCloudflareから `cairn` のNSレコード4件を削除し、その後に依存関係の逆順でスタックを削除する。
+
+```bash
+cd infra
+npx cdk destroy CairnWebStack
+npx cdk destroy CairnDomainStack
+```
+
+この削除によりCognito利用者も失われる。再デプロイ時はRoute 53のネームサーバーが変わるため、新しい4件をCloudflareへ登録し直す。

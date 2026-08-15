@@ -18,12 +18,12 @@ function createTemplates() {
   };
 }
 
-test('domain stack retains the delegated public hosted zone', () => {
+test('domain stack deletes the temporary delegated public hosted zone', () => {
   const { domain } = createTemplates();
 
   domain.hasResource('AWS::Route53::HostedZone', {
-    DeletionPolicy: 'Retain',
-    UpdateReplacePolicy: 'Retain',
+    DeletionPolicy: 'Delete',
+    UpdateReplacePolicy: 'Delete',
     Properties: {
       Name: 'cairn.nibuno.dev.',
     },
@@ -39,6 +39,10 @@ test('web stack protects every application request with Cognito', () => {
     },
     UserPoolTier: 'LITE',
     UsernameAttributes: ['email'],
+  });
+  web.hasResource('AWS::Cognito::UserPool', {
+    DeletionPolicy: 'Delete',
+    UpdateReplacePolicy: 'Delete',
   });
   web.hasResourceProperties('AWS::Cognito::UserPoolClient', {
     GenerateSecret: true,

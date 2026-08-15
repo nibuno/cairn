@@ -12,7 +12,7 @@ export class CairnDomainStack extends cdk.Stack {
       zoneName: 'cairn.nibuno.dev',
       comment: 'Delegated from the nibuno.dev Cloudflare zone',
     });
-    this.hostedZone.applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
+    this.hostedZone.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     new cdk.CfnOutput(this, 'HostedZoneId', {
       value: this.hostedZone.hostedZoneId,
