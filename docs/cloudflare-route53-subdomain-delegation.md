@@ -162,6 +162,19 @@ dig +short SOA cairn.nibuno.dev
 
 正常なら、最初のコマンドにはRoute 53が出力した4つのネームサーバーが表示される。SOAの応答にも `awsdns` を含むRoute 53のネームサーバーが現れる。
 
+### 確認結果
+
+2026-08-15にCloudflareへ4件を登録した後、別環境からも次の公開DNS応答を確認した。NSは順不同であり、4件の集合が一致すればよい。
+
+```text
+ns-384.awsdns-48.com.
+ns-1479.awsdns-56.org.
+ns-1020.awsdns-63.net.
+ns-1822.awsdns-35.co.uk.
+```
+
+SOAも `ns-384.awsdns-48.com` と `awsdns-hostmaster.amazon.com` を返したため、`cairn.nibuno.dev` の権威DNSがRoute 53へ委譲されたことを確認できた。Aレコードはまだ空であり、WebStackを作っていない現在の状態と一致する。
+
 一致を確認して初めて、次の `CairnWebStack` へ進む。初回に `cdk deploy --all` を使わないのは、Cloudflareへの手動委譲を途中に挟むためである。
 
 ## 費用と影響範囲
@@ -188,12 +201,11 @@ Hosted Zoneを作り直すと4つのネームサーバーも変わるため、�
 
 この文書の作成時点では、次はまだ観察していない。
 
-- Cloudflare登録後の公開DNS委譲
 - `CairnWebStack`、証明書、Cognito、ALB、ECSの動作
 
 ## 次の確認
 
-上記4つのNSレコードをCloudflareへ登録し、`dig +short NS cairn.nibuno.dev` の結果が4件と一致することを確認する。
+`CairnWebStack` の差分を確認し、ALB、NAT Gateway、Fargateなど継続料金が発生するリソースの内容に問題がないことを確認する。
 
 ## 参考資料
 
